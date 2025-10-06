@@ -1,9 +1,12 @@
+// AllPlayersScreen displays a searchable, swipe-to-delete list of player profiles.
+// Users can add, edit, or delete players. Data is currently stored in memory.
 import 'package:flutter/material.dart';
 import 'player_profile.dart';
 import 'add_player_screen.dart';
 import 'edit_player_screen.dart';
 
 class AllPlayersScreen extends StatefulWidget {
+  // Main screen widget for listing all players
   const AllPlayersScreen({Key? key}) : super(key: key);
 
   @override
@@ -11,6 +14,7 @@ class AllPlayersScreen extends StatefulWidget {
 }
 
 class _AllPlayersScreenState extends State<AllPlayersScreen> {
+  // List of player profiles (replace with Hive for persistence)
   List<PlayerProfile> players = [
     PlayerProfile(nickname: 'Harriette', fullName: 'Harriette Cabigao', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 3, strengthIndex: 2),
     PlayerProfile(nickname: 'Marcel', fullName: 'Marcel Salmorin', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 2, strengthIndex: 2),
@@ -20,6 +24,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
   ];
   String searchQuery = '';
 
+  // Returns filtered list of players based on search query
   List<PlayerProfile> get filteredPlayers {
     if (searchQuery.isEmpty) return players;
     return players.where((p) =>
@@ -28,6 +33,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     ).toList();
   }
 
+  // Deletes a player after confirmation dialog
   void _deletePlayer(int index) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -47,6 +53,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     }
   }
 
+  // Navigates to AddPlayerScreen and adds new player to the list
   void _navigateToAddPlayer() async {
     final newPlayer = await Navigator.push<PlayerProfile>(
       context,
@@ -61,6 +68,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     }
   }
 
+  // Navigates to EditPlayerScreen and updates or deletes player
   void _navigateToEditPlayer(PlayerProfile player, int index) async {
     final updatedPlayer = await Navigator.push<PlayerProfile>(
       context,
@@ -83,6 +91,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     // No need to handle return value, update/delete handled in callbacks
   }
 
+  // Builds the main UI: search bar, player list, and add button
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,6 +193,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     );
   }
 
+  // Builds a colored avatar with the player's initial
   Widget _buildAvatar(String nickname, int index) {
     final colors = [Colors.red, Colors.blue, Colors.green, Colors.pink, Colors.orange, Colors.purple];
     final color = colors[index % colors.length];
@@ -194,6 +204,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     );
   }
 
+  // Returns a formatted string for player's level and strength
   String _levelStrengthLabel(PlayerProfile player) {
     final levels = ['INTERMEDIATE', 'LEVEL G', 'LEVEL F', 'LEVEL E', 'LEVEL D', 'OPEN'];
     final strengths = ['W', 'M', 'S'];
