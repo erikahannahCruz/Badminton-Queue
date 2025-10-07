@@ -1,6 +1,7 @@
 // AllPlayersScreen displays a searchable, swipe-to-delete list of player profiles.
 // Users can add, edit, or delete players. Data is currently stored in memory.
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'player_profile.dart';
 import 'add_player_screen.dart';
 import 'edit_player_screen.dart';
@@ -14,18 +15,10 @@ class AllPlayersScreen extends StatefulWidget {
 }
 
 class _AllPlayersScreenState extends State<AllPlayersScreen> {
-  // List of player profiles (replace with Hive for persistence)
-  List<PlayerProfile> players = [
-    PlayerProfile(nickname: 'Harriette', fullName: 'Harriette Cabigao', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 3, strengthIndex: 2),
-    PlayerProfile(nickname: 'Marcel', fullName: 'Marcel Salmorin', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 2, strengthIndex: 2),
-    PlayerProfile(nickname: 'Krom', fullName: 'Kromyko Cruzado', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 1, strengthIndex: 2),
-    PlayerProfile(nickname: 'Bea', fullName: 'Bea Lim', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 2, strengthIndex: 2),
-    PlayerProfile(nickname: 'Jies', fullName: 'Jiescotniel Bacaro', contactNumber: '', email: '', address: '', remarks: '', levelIndex: 1, strengthIndex: 2),
-  ];
   String searchQuery = '';
 
-  // Returns filtered list of players based on search query
-  List<PlayerProfile> get filteredPlayers {
+  // Returns filtered list of players from Hive box
+  List<PlayerProfile> filteredPlayers(List<PlayerProfile> players) {
     if (searchQuery.isEmpty) return players;
     return players.where((p) =>
       p.nickname.toLowerCase().contains(searchQuery.toLowerCase()) ||
@@ -33,27 +26,13 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     ).toList();
   }
 
-  // Deletes a player after confirmation dialog
-  void _deletePlayer(int index) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Player'),
-        content: const Text('Are you sure you want to delete this player?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
-        ],
-      ),
-    );
-    if (confirm == true) {
-      setState(() {
-        players.removeAt(index);
-      });
-    }
+  // Deletes a player from Hive box
+  void _deletePlayer(int index, List<PlayerProfile> players) async {
+    var box = Hive.box<PlayerProfile>('players');
+    await box.deleteAt(index);
   }
 
-  // Navigates to AddPlayerScreen and adds new player to the list
+  // Navigates to AddPlayerScreen and adds new player to Hive box
   void _navigateToAddPlayer() async {
     final newPlayer = await Navigator.push<PlayerProfile>(
       context,
@@ -62,33 +41,30 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
       ),
     );
     if (newPlayer != null) {
-      setState(() {
-        players.add(newPlayer);
-      });
+      var box = Hive.box<PlayerProfile>('players');
+      await box.add(newPlayer);
     }
   }
 
-  // Navigates to EditPlayerScreen and updates or deletes player
+  // Navigates to EditPlayerScreen and updates or deletes player in Hive box
   void _navigateToEditPlayer(PlayerProfile player, int index) async {
-    final updatedPlayer = await Navigator.push<PlayerProfile>(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditPlayerScreen(
           player: player,
-          onUpdate: (p) {
-            setState(() {
-              players[index] = p;
-            });
+          onUpdate: (p) async {
+            var box = Hive.box<PlayerProfile>('players');
+            await box.putAt(index, p);
           },
-          onDelete: () {
-            setState(() {
-              players.removeAt(index);
-            });
+          onDelete: () async {
+            var box = Hive.box<PlayerProfile>('players');
+            await box.deleteAt(index);
+            Navigator.pop(context);
           },
         ),
       ),
     );
-    // No need to handle return value, update/delete handled in callbacks
   }
 
   // Builds the main UI: search bar, player list, and add button
@@ -129,61 +105,68 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
             ),
           ),
           Expanded(
-            child: ListView.separated(
-              itemCount: filteredPlayers.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final player = filteredPlayers[index];
-                return Dismissible(
-                  key: Key(player.nickname + index.toString()),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  confirmDismiss: (_) async {
-                    return await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Delete Player'),
-                        content: const Text('Are you sure you want to delete this player?'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
-                        ],
+            child: ValueListenableBuilder(
+              valueListenable: Hive.box<PlayerProfile>('players').listenable(),
+              builder: (context, Box<PlayerProfile> box, _) {
+                final players = box.values.toList();
+                final filtered = filteredPlayers(players);
+                return ListView.separated(
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final player = filtered[index];
+                    return Dismissible(
+                      key: Key(player.nickname + index.toString()),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      confirmDismiss: (_) async {
+                        return await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Delete Player'),
+                            content: const Text('Are you sure you want to delete this player?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+                            ],
+                          ),
+                        );
+                      },
+                      onDismissed: (_) => _deletePlayer(index, filtered),
+                      child: GestureDetector(
+                        onTap: () => _navigateToEditPlayer(player, index),
+                        child: Card(
+                          elevation: 1,
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                            child: Row(
+                              children: [
+                                _buildAvatar(player.nickname, index),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(player.nickname, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                      Text(player.fullName, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                                      Text(_levelStrengthLabel(player), style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },
-                  onDismissed: (_) => _deletePlayer(index),
-                  child: GestureDetector(
-                    onTap: () => _navigateToEditPlayer(player, index),
-                    child: Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        child: Row(
-                          children: [
-                            _buildAvatar(player.nickname, index),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(player.nickname, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Text(player.fullName, style: const TextStyle(fontSize: 13, color: Colors.black87)),
-                                  Text(_levelStrengthLabel(player), style: const TextStyle(fontSize: 13, color: Colors.black54)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 );
               },
             ),

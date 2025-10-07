@@ -31,22 +31,9 @@ class EditPlayerScreen extends StatelessWidget {
               );
               Navigator.pop(context);
             },
-            onDelete: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Delete Player'),
-                  content: const Text('Are you sure you want to delete this player?'),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                onDelete();
-                Navigator.pop(context);
-              }
+            onDelete: () {
+              onDelete();
+              Navigator.pop(context);
             },
             onCancel: () => Navigator.pop(context),
           ),

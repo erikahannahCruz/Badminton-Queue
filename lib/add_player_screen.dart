@@ -212,11 +212,10 @@ class AddPlayerScreen extends StatelessWidget {
           child: PlayerForm(
             actionButtonText: 'Save Player',
             onSubmit: (player) {
-              // TODO: Save logic here
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Player saved!')),
               );
-              Navigator.pop(context);
+              Navigator.pop(context, player);
             },
             onCancel: () => Navigator.pop(context),
           ),
