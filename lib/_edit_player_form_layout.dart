@@ -60,7 +60,6 @@ class EditPlayerFormLayoutState extends State<EditPlayerFormLayout> {
                 ),
                 onPressed: () {
                   widget.onDelete();
-                  Navigator.pop(context);
                 },
                 child: const Text('Delete Player'),
               ),
