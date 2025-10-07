@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'player_profile.dart';
 import 'add_player_screen.dart';
+import '_edit_player_form_layout.dart';
 
 
 class EditPlayerScreen extends StatelessWidget {
@@ -21,21 +22,10 @@ class EditPlayerScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Edit Player Profile')),
       body: Center(
         child: SingleChildScrollView(
-          child: PlayerForm(
-            initialPlayer: player,
-            actionButtonText: 'Update Player',
-            onSubmit: (updatedPlayer) {
-              onUpdate(updatedPlayer);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Player updated!')),
-              );
-              Navigator.pop(context);
-            },
-            onDelete: () {
-              onDelete();
-              Navigator.pop(context);
-            },
-            onCancel: () => Navigator.pop(context),
+          child: EditPlayerFormLayout(
+            player: player,
+            onUpdate: onUpdate,
+            onDelete: onDelete,
           ),
         ),
       ),
