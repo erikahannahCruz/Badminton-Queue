@@ -58,8 +58,21 @@ class EditPlayerFormLayoutState extends State<EditPlayerFormLayout> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                onPressed: () {
-                  widget.onDelete();
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Delete Player'),
+                      content: const Text('Are you sure you want to delete this player?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    widget.onDelete();
+                  }
                 },
                 child: const Text('Delete Player'),
               ),
