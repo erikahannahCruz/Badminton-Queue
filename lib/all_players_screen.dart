@@ -1,5 +1,5 @@
-// AllPlayersScreen displays a searchable, swipe-to-delete list of player profiles.
-// Users can add, edit, or delete players. Data is currently stored in memory.
+/// AllPlayersScreen displays a searchable, swipe-to-delete list of player profiles.
+/// Users can add, edit, or delete players. Data is stored in Hive local storage.
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'player_profile.dart';
@@ -7,7 +7,7 @@ import 'add_player_screen.dart';
 import 'edit_player_screen.dart';
 
 class AllPlayersScreen extends StatefulWidget {
-  // Main screen widget for listing all players
+  /// Main screen widget for listing all players
   const AllPlayersScreen({Key? key}) : super(key: key);
 
   @override
@@ -15,9 +15,10 @@ class AllPlayersScreen extends StatefulWidget {
 }
 
 class _AllPlayersScreenState extends State<AllPlayersScreen> {
+  /// Current search query for filtering players
   String searchQuery = '';
 
-  // Returns filtered list of players from Hive box
+  /// Returns filtered list of players from Hive box based on search query
   List<PlayerProfile> filteredPlayers(List<PlayerProfile> players) {
     if (searchQuery.isEmpty) return players;
     return players.where((p) =>
@@ -26,13 +27,13 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     ).toList();
   }
 
-  // Deletes a player from Hive box
+  /// Deletes a player from Hive box
   void _deletePlayer(int index, List<PlayerProfile> players) async {
     var box = Hive.box<PlayerProfile>('players');
     await box.deleteAt(index);
   }
 
-  // Navigates to AddPlayerScreen and adds new player to Hive box
+  /// Navigates to AddPlayerScreen and adds new player to Hive box
   void _navigateToAddPlayer() async {
     final newPlayer = await Navigator.push<PlayerProfile>(
       context,
@@ -46,7 +47,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     }
   }
 
-  // Navigates to EditPlayerScreen and updates or deletes player in Hive box
+  /// Navigates to EditPlayerScreen and updates or deletes player in Hive box
   void _navigateToEditPlayer(PlayerProfile player, int index) async {
     await Navigator.push(
       context,
@@ -67,9 +68,10 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     );
   }
 
-  // Builds the main UI: search bar, player list, and add button
+  /// Builds the main UI: search bar, player list, and add button
   @override
   Widget build(BuildContext context) {
+    // Scaffold provides the app bar, search bar, player list, and add button.
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Players', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -176,7 +178,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     );
   }
 
-  // Builds a colored avatar with the player's initial
+  /// Builds a colored avatar with the player's initial
   Widget _buildAvatar(String nickname, int index) {
     final colors = [Colors.red, Colors.blue, Colors.green, Colors.pink, Colors.orange, Colors.purple];
     final color = colors[index % colors.length];
@@ -187,7 +189,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     );
   }
 
-  // Returns a formatted string for player's level and strength
+  /// Returns a formatted string for player's level and strength
   String _levelStrengthLabel(PlayerProfile player) {
     final levels = ['INTERMEDIATE', 'LEVEL G', 'LEVEL F', 'LEVEL E', 'LEVEL D', 'OPEN'];
     final strengths = ['W', 'M', 'S'];

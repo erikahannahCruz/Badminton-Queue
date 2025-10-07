@@ -16,6 +16,8 @@ class EditPlayerScreen extends StatelessWidget {
     required this.onDelete,
   }) : super(key: key);
 
+  /// EditPlayerScreen allows users to update or delete an existing player profile.
+  /// It uses EditPlayerFormLayout for the form and button layout.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
