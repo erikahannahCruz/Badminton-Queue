@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'player_profile.dart';
 import 'all_players_screen.dart';
+import 'home_screen.dart';
 import 'package:flutter/material.dart';
 
 
@@ -11,6 +12,9 @@ void main() async {
   await Hive.initFlutter(); // Initializes Hive for Flutter
   Hive.registerAdapter(PlayerProfileAdapter()); // Registers the Hive adapter for PlayerProfile
   await Hive.openBox<PlayerProfile>('players'); // Opens the Hive box for player profiles
+  // Open additional boxes for games and user settings (store plain maps)
+  await Hive.openBox('games');
+  await Hive.openBox('settings');
   runApp(const MyApp()); // Runs the main app widget
 }
 
@@ -28,7 +32,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const AllPlayersScreen(), // Main screen showing all players
+      home: const HomeScreen(), // Root with bottom navigation (Games, Players, Settings)
     );
   }
 }
