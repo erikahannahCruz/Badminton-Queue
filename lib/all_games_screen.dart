@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'add_game_screen.dart';
 import 'view_game_screen.dart';
+import 'game_utils.dart';
 
 /// AllGamesScreen lists all saved games, allows search, swipe-to-delete and adding.
 class AllGamesScreen extends StatefulWidget {
@@ -68,8 +69,9 @@ class _AllGamesScreenState extends State<AllGamesScreen> {
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final g = filtered[index];
-                    final title = (g['title'] == null || (g['title'] as String).isEmpty) ? g['createdAt'] : g['title'];
-                    final players = g['playersCount'] ?? 0;
+                    final title = formatGameTitle(g);
+                    final playerKeys = (g['playerKeys'] as List?)?.cast<dynamic>() ?? [];
+                    final players = playerKeys.length;
                     // compute total cost: court cost(s) + shuttle price
                     double totalCourtCost = 0.0;
                     if (g['schedules'] != null) {
@@ -109,7 +111,7 @@ class _AllGamesScreenState extends State<AllGamesScreen> {
                       child: ListTile(
                         title: Text(title.toString()),
                         subtitle: Text('Players: $players  •  Total: ₱${totalCost.toStringAsFixed(2)}'),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ViewGameScreen(game: g))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ViewGameScreen(game: g, gameIndex: index))),
                       ),
                     );
                   },

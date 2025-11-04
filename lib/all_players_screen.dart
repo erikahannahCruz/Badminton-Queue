@@ -75,13 +75,6 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Players', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: _navigateToAddPlayer,
-            tooltip: 'Add New Player',
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -175,6 +168,11 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddPlayer,
+        child: const Icon(Icons.add),
+        tooltip: 'Add New Player',
+      ),
     );
   }
 
@@ -192,9 +190,7 @@ class _AllPlayersScreenState extends State<AllPlayersScreen> {
   /// Returns a formatted string for player's level and strength
   String _levelStrengthLabel(PlayerProfile player) {
     final levels = ['INTERMEDIATE', 'LEVEL G', 'LEVEL F', 'LEVEL E', 'LEVEL D', 'OPEN'];
-    final strengths = ['W', 'M', 'S'];
     String level = levels[player.levelIndex % levels.length];
-    String strength = strengths[player.strengthIndex % strengths.length];
     // Example: Strong F, Mid E
     return 'Strong $level, Mid $level'; // You can customize this to show both strength and level as needed
   }
